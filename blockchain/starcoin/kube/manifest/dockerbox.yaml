@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dockerbox-deployment
+  labels:
+    app: dockerbox
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dockerbox
+  template:
+    metadata:
+      labels:
+        app: dockerbox
+    spec:
+      containers:
+        - name: dockerbox
+          image: jolestar/dockerbox:latest
+          imagePullPolicy: Always
+          command:
+            - bash
+            - -c
+          args:
+            -
+              while true; do sleep 10 ; echo "sleep"; done;

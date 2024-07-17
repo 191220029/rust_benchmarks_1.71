@@ -1,0 +1,14 @@
+[package]
+name = "ckb-async-runtime"
+version = "0.111.0"
+license = "MIT"
+authors = ["Nervos Core Dev <dev@nervos.org>"]
+edition = "2021"
+description = "CKB async runtime wrapper."
+homepage = "https://github.com/nervosnetwork/ckb"
+repository = "https://github.com/nervosnetwork/ckb"
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+ckb-logger = { path = "../logger", version = "= 0.111.0" }
+ckb-spawn = {  path = "../spawn", version = "= 0.111.0" }

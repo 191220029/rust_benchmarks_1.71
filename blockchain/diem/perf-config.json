@@ -1,0 +1,7 @@
+{
+    "compile_time_type": "Packages",
+    "packages": [
+        "diem-client"
+    ],
+    "runtime_test_type": "Test"
+}

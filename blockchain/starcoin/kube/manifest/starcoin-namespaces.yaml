@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    app: starcoin
+    network: halley
+  name: starcoin-halley
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    app: starcoin
+    network: proxima
+  name: starcoin-proxima
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    app: starcoin
+    network: main
+  name: starcoin-main
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    app: starcoin
+    network: barnard
+  name: starcoin-barnard
+---

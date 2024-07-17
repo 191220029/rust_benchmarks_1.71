@@ -1,0 +1,69 @@
+==================================== INPUT ====================================
+fragment Foo_user on User {
+  hobbit_name
+}
+
+fragment PopStarNameResolverFragment_name on User {
+  name
+  address {
+    street
+  }
+  parents {
+    lastName
+  }
+}
+
+fragment HobbitNameResolverFragment_name on User {
+  name
+  pop_star_name
+}
+
+# %extensions%
+
+extend type User {
+  pop_star_name: String @relay_resolver(fragment_name: "PopStarNameResolverFragment_name", import_path: "PopStarNameResolver")
+  hobbit_name: String @relay_resolver(fragment_name: "HobbitNameResolverFragment_name", import_path: "HobbitNameResolver")
+}
+==================================== OUTPUT ===================================
+fragment Foo_user on User {
+  ...HobbitNameResolverFragment_name @__RelayResolverMetadata
+  # RelayResolverMetadata {
+  #     field_id: FieldID(524),
+  #     import_path: "HobbitNameResolver",
+  #     import_name: None,
+  #     field_alias: None,
+  #     field_path: "hobbit_name",
+  #     field_arguments: [],
+  #     live: false,
+  #     output_type_info: Legacy,
+  #     fragment_data_injection_mode: None,
+  # }
+  
+}
+
+fragment HobbitNameResolverFragment_name on User {
+  name
+  ...PopStarNameResolverFragment_name @__RelayResolverMetadata
+  # RelayResolverMetadata {
+  #     field_id: FieldID(523),
+  #     import_path: "PopStarNameResolver",
+  #     import_name: None,
+  #     field_alias: None,
+  #     field_path: "pop_star_name",
+  #     field_arguments: [],
+  #     live: false,
+  #     output_type_info: Legacy,
+  #     fragment_data_injection_mode: None,
+  # }
+  
+}
+
+fragment PopStarNameResolverFragment_name on User {
+  name
+  address {
+    street
+  }
+  parents {
+    lastName
+  }
+}

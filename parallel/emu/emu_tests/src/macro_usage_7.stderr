@@ -1,0 +1,5 @@
+error: ABI function cannot be tagged with `#[gpu_use]`
+ --> $DIR/macro_usage_7.rs:5:1
+  |
+5 | extern fn do_something() {
+  | ^^^^^^^^^^^^^^^^^^^^^^^^

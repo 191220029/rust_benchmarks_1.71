@@ -1,0 +1,6 @@
+{
+    "runtime_test_type": "Packages",
+    "runtime_test_packages": [
+        "crossbeam-utils"
+    ]
+}

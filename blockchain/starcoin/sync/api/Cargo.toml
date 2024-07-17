@@ -1,0 +1,23 @@
+[dependencies]
+anyhow = { workspace = true }
+async-trait = { workspace = true }
+network-api = { package = "network-api", workspace = true }
+schemars = { workspace = true }
+serde = { default-features = false, workspace = true }
+starcoin-accumulator = { workspace = true }
+starcoin-crypto = { workspace = true }
+starcoin-logger = { package = "starcoin-logger", workspace = true }
+starcoin-service-registry = { workspace = true }
+starcoin-types = { package = "starcoin-types", workspace = true }
+stream-task = { workspace = true }
+
+[package]
+authors = { workspace = true }
+edition = { workspace = true }
+name = "starcoin-sync-api"
+version = "1.13.11"
+homepage = { workspace = true }
+license = { workspace = true }
+publish = { workspace = true }
+repository = { workspace = true }
+rust-version = { workspace = true }

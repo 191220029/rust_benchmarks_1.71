@@ -1,0 +1,13 @@
+{
+    "compile_time_type": "Packages",
+    "packages": [
+        "wasmer"
+    ],
+    "runtime_test_type": "Example",
+    "example_lst": [
+        "wasi",
+        "memory",
+        "instance"
+    ],
+    "runtime_opts": "--features='cranelift wasi features'"
+}

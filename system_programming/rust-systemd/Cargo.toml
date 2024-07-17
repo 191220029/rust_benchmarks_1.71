@@ -1,0 +1,53 @@
+[package]
+name = "systemd"
+version = "0.10.0"
+authors = ["Cody P Schafer <dev@codyps.com>"]
+license = "LGPL-2.1-or-later WITH GCC-exception-2.0"
+description = "A rust interface to libsystemd/libelogind provided APIs"
+repository = "https://github.com/jmesmon/rust-systemd"
+documentation = "https://docs.rs/crate/systemd"
+include = ["Cargo.toml", "src/**/*.rs", "COPYING", "README.md"]
+readme = "README.md"
+edition = "2018"
+
+[features]
+default = ["bus", "journal"]
+
+bus = ["libsystemd-sys/bus"]
+journal = ["libsystemd-sys/journal"]
+systemd_v245 = ["libsystemd-sys/systemd_v245"]
+unstable-doc-cfg = []
+
+[dependencies]
+log = "~0.4"
+libc = "~0.2"
+memchr = "2.4.0"
+utf8-cstr = "~0.1"
+cstr-argument = "~0.1"
+foreign-types = "0.5.0"
+serde = { version = "1", default-features = false, optional = true }
+#enumflags2 = "^0.5"
+#enumflags2_derive = "^0.5"
+
+[dependencies.libsystemd-sys]
+path = "libsystemd-sys"
+version = "^0.9"
+
+[dev-dependencies]
+version-sync = "0.9.2"
+doc-comment = "0.3"
+
+[profile.release]
+debug = true
+
+[package.metadata.docs.rs]
+all-features = true
+
+[workspace]
+members = ["libsystemd-sys"]
+
+[package.metadata.release]
+tag-prefix = "systemd-"
+
+[lib]
+doctest = false

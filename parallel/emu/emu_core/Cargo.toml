@@ -1,0 +1,37 @@
+[package]
+name = "emu_core"
+version = "0.1.1"
+authors = ["Caleb Winston <calebhwin@gmail.com>"]
+description = "A low-level GPGPU compute library featuring cross-platform support and SPIR-V as input"
+homepage = "https://www.github.com/calebwin/emu"
+documentation = "https://calebwin.github.io/emu"
+repository = "https://www.github.com/calebwin/emu"
+readme = "README.md"
+keywords = ["emu", "glsl", "compute", "em", "emu_glsl"]
+categories = ["science", "simulation", "concurrency", "computer-vision", "rendering"]
+license = "MIT"
+edition = "2018"
+
+# if you are compiling documentation with `cargo doc`,
+# be sure to compile with `--features glsl-compil`
+# otherwise, there will be links to certain pages that don't exist
+[package.metadata.docs.rs]
+features = ["glsl-compile"]
+
+[features]
+default = []
+glsl-compile = ["shaderc"]
+
+[dependencies]
+wgpu = "0.7.0"
+futures = "0.3.12"
+zerocopy = "0.3.0"
+lazy_static = "1.4.0"
+derive_more = "0.99.11"
+shaderc = { version = "0.7.1", optional = true }
+gfx-auxil = "0.8.0"
+
+[dev-dependencies]
+futures = "0.3.12"
+timeit = "0.1.2"
+emu_glsl = "0.1.0"

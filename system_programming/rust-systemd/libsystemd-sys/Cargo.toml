@@ -1,0 +1,27 @@
+[package]
+name = "libsystemd-sys"
+version = "0.9.3"
+authors = ["Cody P Schafer <dev@codyps.com>"]
+license = "LGPL-2.1-or-later WITH GCC-exception-2.0"
+description = "FFI bindings to libsystemd and libelogind"
+repository = "https://github.com/jmesmon/rust-systemd"
+include = ["Cargo.toml", "**/*.rs", "build.rs", "COPYING", "README.md"]
+readme = "README.md"
+documentation = "https://docs.rs/crates/libsystemd-sys"
+edition = "2018"
+
+build = "build.rs"
+
+[features]
+default = ["bus", "journal"]
+
+bus = []
+journal = []
+systemd_v245 = []
+
+[dependencies]
+libc = "0.2.76"
+
+[build-dependencies]
+pkg-config = "0.3.18"
+build-env = "0.3.0"

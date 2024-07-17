@@ -1,0 +1,4 @@
+{
+    "cargo_toml": "src/core/libs/cardano_multiplatform_lib/Cargo.toml",
+    "target_path": "src/core/libs/cardano_multiplatform_lib"
+}

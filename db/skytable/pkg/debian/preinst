@@ -1,0 +1,23 @@
+#!/bin/sh -e
+
+SKY_DIR=/var/lib/skytable
+
+# Create the data directory if it doesn't exist
+if [ ! -e "$SKY_DIR" ]; then
+    mkdir -p "$SKY_DIR"
+    echo "Created directory $SKY_DIR"
+elif [ ! -d "$SKY_DIR" ]; then
+    echo "ERROR: $SKY_DIR exists but it is not a directory" 1>&2
+    exit 1
+fi
+
+# On initial install, add the `skytable` user
+if [ "$1" = "install" ]; then
+    echo "Creating user 'skytable'"
+    if ! getent passwd skytable > /dev/null; then
+        adduser --system --group --no-create-home skytable
+    fi
+    chown -R skytable:skytable "$SKY_DIR"
+    echo "Created user 'skytable'"
+fi
+#DEBHELPER#

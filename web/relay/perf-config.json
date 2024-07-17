@@ -1,0 +1,4 @@
+{
+    "cargo_toml": "./compiler/crates/relay-compiler/Cargo.toml",
+    "target_path": "compiler"
+}

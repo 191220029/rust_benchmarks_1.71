@@ -1,0 +1,18 @@
+{
+  "lint": {
+    "exclude": [
+      "node",
+      "test"
+    ]
+  },
+  "fmt": {
+    "exclude": [
+      "node",
+      "test"
+    ]
+  },
+  "tasks": {
+    "vendor": "deno run -A vendor.ts"
+  },
+  "lock": false
+}

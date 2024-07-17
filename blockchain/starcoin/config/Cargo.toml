@@ -1,0 +1,46 @@
+[dependencies]
+anyhow = { workspace = true }
+clap = { features = ["derive", "cargo"], workspace = true }
+dirs-next = { workspace = true }
+git-version = { workspace = true }
+hex = { workspace = true }
+libc = { workspace = true }
+names = { default-features = false, workspace = true }
+network-api = { package = "network-api", workspace = true }
+network-p2p-types = { workspace = true }
+network-types = { workspace = true }
+num_cpus = { workspace = true }
+num_enum = { workspace = true }
+once_cell = { workspace = true }
+parking_lot = { workspace = true }
+rand = { workspace = true }
+rand_core = { default-features = false, workspace = true }
+schemars = { workspace = true }
+serde = { features = ["derive"], workspace = true }
+serde_json = { features = ["arbitrary_precision"], workspace = true }
+starcoin-account-api = { workspace = true }
+starcoin-crypto = { workspace = true }
+starcoin-logger = { package = "starcoin-logger", workspace = true }
+starcoin-metrics = { workspace = true }
+starcoin-system = { package = "starcoin-system", workspace = true }
+starcoin-time-service = { workspace = true }
+starcoin-types = { workspace = true }
+starcoin-uint = { workspace = true }
+starcoin-vm-types = { workspace = true }
+starcoin-gas-algebra-ext = { workspace = true }
+starcoin-gas = { workspace = true }
+stdlib = { workspace = true }
+tempfile = { workspace = true }
+thiserror = { workspace = true }
+toml = { default-features = false, workspace = true }
+
+[package]
+authors = { workspace = true }
+edition = { workspace = true }
+license = { workspace = true }
+name = "starcoin-config"
+publish = { workspace = true }
+version = "1.13.11"
+homepage = { workspace = true }
+repository = { workspace = true }
+rust-version = { workspace = true }

@@ -1,0 +1,33 @@
+[workspace]
+resolver = "2"
+members = [
+    "stackslib",
+    "stacks-common",
+    "pox-locking",
+    "clarity",
+    "stx-genesis",
+    "libstackerdb",
+    "libsigner",
+    "stacks-signer",
+    "testnet/stacks-node"]
+
+# Dependencies we want to keep the same between workspace members
+[workspace.dependencies]  
+wsts = { version = "7.0", default-features = false }
+rand_core = "0.6"
+rand = "0.8"
+
+# Use a bit more than default optimization for
+#  dev builds to speed up test execution
+[profile.dev]
+opt-level = 1
+
+# Use release-level optimization for dependencies
+# This slows down "first" builds on development environments,
+#  but won't impact subsequent builds.
+[profile.dev.package."*"]
+opt-level = 3
+
+[profile.release]
+debug = true
+

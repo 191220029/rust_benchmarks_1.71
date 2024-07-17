@@ -1,0 +1,7 @@
+{
+    "compile_time_type": "Packages",
+    "packages": [
+        "graph_derive",
+        "substreams-head-tracker"
+    ]
+}

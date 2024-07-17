@@ -1,0 +1,15 @@
+[Unit]
+Description=Skytable database server daemon
+After=Network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=skytable
+ExecStart=/usr/bin/skyd --config=/var/lib/skytable/config.yaml
+WorkingDirectory=/var/lib/skytable
+
+[Install]
+WantedBy=multi-user.target

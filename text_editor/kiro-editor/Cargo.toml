@@ -1,0 +1,52 @@
+[package]
+name = "kiro-editor"
+version = "0.4.3"
+authors = ["rhysd <https://rhysd.github.io>"]
+edition = "2018"
+description = """
+kiro is a simplistic terminal text editor.
+"""
+homepage = "https://github.com/rhysd/kiro-editor"
+repository = "https://github.com/rhysd/kiro-editor"
+readme = "README.md"
+include = ["src/**/*.rs", "Cargo.toml"]
+keywords = ["text-editor", "editor", "terminal", "utf-8"]
+categories = ["text-editors", "development-tools"]
+license = "MIT"
+
+[package.metadata.release]
+no-dev-version = true
+
+[[bin]]
+path = "src/main.rs"
+name = "kiro"
+
+[profile.bench]
+lto = true
+
+[profile.release]
+debug = 1
+lto = true
+
+[dependencies]
+termios = "0.3"
+term_size = "0.3"
+unicode-width = "0.1"
+term = "0.7"
+getopts = "0.2"
+signal-hook = "0.3"
+jemallocator = "0.3"
+
+[badges]
+maintenance = { status = "actively-developed" }
+
+[dev-dependencies]
+rand = "0.7"
+
+[dev-dependencies.cargo-husky]
+version = "1"
+default-features = false
+features = ["prepush-hook", "run-cargo-test", "run-cargo-clippy"]
+
+[lib]
+doctest = false

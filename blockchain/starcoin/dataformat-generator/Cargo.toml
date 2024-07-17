@@ -1,0 +1,23 @@
+[build-dependencies]
+serde-reflection = { workspace = true }
+starcoin-crypto = { package = "starcoin-crypto", workspace = true }
+starcoin-types = { package = "starcoin-types", workspace = true }
+anyhow = { workspace = true }
+bcs-ext = { package = "bcs-ext", workspace = true }
+serde = { features = ["derive"], workspace = true }
+serde_yaml = { workspace = true }
+starcoin-vm-types = { workspace = true }
+
+[dependencies]
+
+[package]
+authors = { workspace = true }
+edition = { workspace = true }
+name = "starcoin-dataformat-generator"
+version = "1.13.11"
+build = "build.rs"
+homepage = { workspace = true }
+license = { workspace = true }
+publish = { workspace = true }
+repository = { workspace = true }
+rust-version = { workspace = true }

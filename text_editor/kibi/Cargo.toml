@@ -1,0 +1,33 @@
+[package]
+name = "kibi"
+version = "0.2.2"
+rust-version = "1.64"
+authors = ["Ilaï Deutel"]
+license = "MIT OR Apache-2.0"
+edition = "2018"
+description = "A text editor in less than 1024 lines of code with syntax highlighting, search and more."
+repository = "https://github.com/ilai-deutel/kibi"
+readme = "README.md"
+keywords = ["editor", "terminal", "text-editor"]
+categories = ["text-editors", "development-tools"]
+include = ["src/**/*", "Cargo.toml", "LICENSE*", "COPYRIGHT"]
+
+[dependencies]
+unicode-width = "0.1.11"
+
+[target.'cfg(unix)'.dependencies]
+libc = "0.2.153"
+
+[target.'cfg(windows)'.dependencies]
+winapi = { version = "0.3.9", default-features = false, features = ["wincon"] }
+winapi-util = "0.1.6"
+
+[dev-dependencies]
+tempfile = "3.10.0"
+serial_test = "3.0.0"
+
+[badges]
+maintenance = { status = "actively-developed" }
+
+[lib]
+doctest = false

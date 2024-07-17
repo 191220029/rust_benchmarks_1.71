@@ -1,0 +1,49 @@
+[package]
+name = "ruplacer"
+version = "0.8.3"
+authors = ["Dimitri Merejkowsky <dimitri@dmerej.info>"]
+description = "Find and replace text in source files"
+license = "BSD-3-Clause"
+readme = "README.md"
+edition = "2021"
+keywords = ["ruplacer", "find", "grep", "command", "line"]
+categories = ["command-line-utilities"]
+repository = "https://github.com/your-tools/ruplacer"
+
+[package.metadata.deb]
+extended-description = "Find and replace text in source files"
+
+[dependencies]
+anyhow = "1.0.32"
+clap = { version = "4.3.11", features = ["derive"] }
+colored = "2.0"
+ignore = "0.4"
+Inflector = "0.11"
+regex = "1.5.5"
+
+
+[dev-dependencies]
+tempfile = "3.2"
+
+[features]
+
+# The profile that 'cargo dist' will build with
+[profile.dist]
+inherits = "release"
+lto = "thin"
+
+# Config for 'cargo dist'
+[workspace.metadata.dist]
+# The preferred cargo-dist version to use in CI (Cargo.toml SemVer syntax)
+cargo-dist-version = "0.11.0"
+# CI backends to support
+ci = ["github"]
+# The installers to generate for each app
+installers = []
+# Target platforms to build apps for (Rust target-triple syntax)
+targets = ["aarch64-apple-darwin", "x86_64-apple-darwin", "x86_64-unknown-linux-gnu", "x86_64-pc-windows-msvc"]
+# Publish jobs to run in CI
+pr-run-mode = "plan"
+
+[lib]
+doctest = false

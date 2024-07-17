@@ -1,0 +1,14 @@
+==================================== INPUT ====================================
+# expected-to-throw
+
+type User {
+  emails: [Email!]!
+}
+==================================== ERROR ====================================
+✖︎ Reference to undefined type 'Email'.
+
+  <generated>:4:12
+    3 │ type User {
+    4 │   emails: [Email!]!
+      │            ^^^^^
+    5 │ }

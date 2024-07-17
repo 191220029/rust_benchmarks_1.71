@@ -1,0 +1,57 @@
+[dependencies]
+anyhow = { workspace = true }
+async-trait = { workspace = true }
+forkable-jellyfish-merkle = { workspace = true }
+futures = { workspace = true }
+futures-channel = { workspace = true }
+linked-hash-map = { workspace = true }
+log = { workspace = true }
+network-api = { package = "network-api", workspace = true }
+parking_lot = { workspace = true }
+rand = { workspace = true }
+rand_core = { default-features = false, workspace = true }
+serde = { workspace = true }
+serde_derive = { workspace = true }
+starcoin-config = { workspace = true }
+starcoin-crypto = { package = "starcoin-crypto", workspace = true }
+starcoin-executor = { workspace = true }
+starcoin-logger = { workspace = true }
+starcoin-metrics = { workspace = true }
+starcoin-service-registry = { workspace = true }
+starcoin-state-api = { workspace = true }
+starcoin-state-tree = { workspace = true }
+starcoin-statedb = { workspace = true }
+starcoin-types = { package = "starcoin-types", workspace = true }
+starcoin-storage = { workspace = true }
+starcoin-txpool-api = { package = "starcoin-txpool-api", workspace = true }
+stest = { workspace = true }
+tokio = { workspace = true }
+trace-time = { workspace = true }
+transaction-pool = { workspace = true }
+proptest = { default-features = false, optional = true, workspace = true }
+proptest-derive = { default-features = false, optional = true, workspace = true }
+
+[dev-dependencies]
+proptest = { workspace = true }
+proptest-derive = { workspace = true }
+starcoin-genesis = { workspace = true }
+starcoin-open-block = { workspace = true }
+starcoin-transaction-builder = { workspace = true }
+stdlib = { workspace = true }
+tempfile = { workspace = true }
+test-helper = { workspace = true }
+
+[features]
+default = []
+fuzzing = ["proptest", "proptest-derive", "starcoin-types/fuzzing"]
+
+[package]
+authors = { workspace = true }
+edition = { workspace = true }
+license = { workspace = true }
+name = "starcoin-txpool"
+publish = { workspace = true }
+version = "1.13.11"
+homepage = { workspace = true }
+repository = { workspace = true }
+rust-version = { workspace = true }

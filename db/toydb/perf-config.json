@@ -1,0 +1,4 @@
+{
+    "runtime_test_type": "Test",
+    "cargo_opts": "--bin toydb"
+}

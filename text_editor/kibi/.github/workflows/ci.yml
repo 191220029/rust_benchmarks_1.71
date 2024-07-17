@@ -1,0 +1,161 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build_and_test:
+    strategy:
+      matrix:
+        include:
+          # Linux
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-musl
+          - os: ubuntu-latest
+            target: i686-unknown-linux-gnu
+
+          # MacOS
+          - os: macos-latest
+            target: x86_64-apple-darwin
+
+          # Windows
+          - os: windows-latest
+            target: x86_64-pc-windows-gnu
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+          - os: windows-latest
+            target: i686-pc-windows-msvc
+
+          # WASI
+          - os: ubuntu-latest
+            target: wasm32-wasi
+
+          # MSRV (Linux)
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            toolchain: 1.64.0
+          # MSRV (MacOS)
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            toolchain: 1.64.0
+          # MSRV (Windows)
+          - os: windows-latest
+            target: x86_64-pc-windows-gnu
+            toolchain: 1.64.0
+          # MSRV (WASI)
+          - os: ubuntu-latest
+            target: wasm32-wasi
+            toolchain: 1.64.0
+
+          # Nightly (Linux)
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            toolchain: nightly
+            coverage: true
+          # Nightly (MacOS)
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            toolchain: nightly
+            coverage: true
+          # Nightly (Windows)
+          - os: windows-latest
+            target: x86_64-pc-windows-gnu
+            toolchain: nightly
+            coverage: true
+          # Nightly (WASI)
+          - os: ubuntu-latest
+            target: wasm32-wasi
+            toolchain: nightly
+            coverage: true
+
+    runs-on: ${{ matrix.os }}
+
+    env:
+      RUSTFLAGS: -D warnings
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install gcc-multilib
+        if: matrix.target == 'i686-unknown-linux-gnu'
+        run: |
+          sudo apt-get update
+          sudo apt-get install gcc-multilib
+      - name: Install Rust toolchain
+        run: |
+          rustup toolchain install ${{ matrix.toolchain || 'stable' }}
+          rustup override set  ${{ matrix.toolchain || 'stable' }}
+          rustup target add --toolchain ${{ matrix.toolchain || 'stable' }} ${{ matrix.target }}
+      - name: Build
+        run: cargo build
+      - name: Run tests without coverage instrumentation
+        if: ${{ ! matrix.coverage }}
+        run: cargo test --verbose --all-features --no-fail-fast
+      - name: Run tests with coverage instrumentation
+        if: matrix.coverage
+        run: cargo test --verbose --all-features --no-fail-fast
+        env:
+          CARGO_INCREMENTAL: '0'
+          RUSTFLAGS: '-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Cpanic=abort -Zpanic_abort_tests'
+          RUSTDOCFLAGS: '-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Cpanic=abort -Zpanic_abort_tests'
+      - name: Collect code coverage results
+        if: matrix.coverage
+        uses: actions-rs/grcov@v0.1
+        id: coverage
+      - name: Upload code coverage results
+        if: matrix.coverage
+        uses: codecov/codecov-action@v3
+        with:
+          files: ${{ steps.coverage.outputs.report }}
+          flags: ${{ matrix.target }}
+          fail_ci_if_error: false
+          verbose: true
+
+  static_checks:
+    strategy:
+      matrix:
+        include:
+          # Unix
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+
+          # MacOS
+          - os: macos-latest
+            target: x86_64-apple-darwin
+
+          # Windows
+          - os: windows-latest
+            target: x86_64-pc-windows-gnu
+
+          # WASI
+          - os: ubuntu-latest
+            target: wasm32-wasi
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install nightly with clippy and rustfmt
+        run: |
+          rustup toolchain install nightly --component rustfmt --component clippy --allow-downgrade
+          rustup override set nightly
+          rustup target add --toolchain nightly ${{ matrix.target }}
+      - name: Run rustfmt check
+        run: cargo fmt --check
+      - name: Run Clippy
+        uses: giraffate/clippy-action@v1
+        with:
+          clippy_flags: --all-features --target ${{ matrix.target }} -- -D warnings -D clippy::pedantic
+          tool_name: clippy-${{ matrix.target }}
+          reporter: github-pr-review
+          level: error
+          fail_on_error: true

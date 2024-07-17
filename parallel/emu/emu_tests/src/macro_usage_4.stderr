@@ -1,0 +1,11 @@
+error: key-value macro attributes are not supported
+ --> $DIR/macro_usage_4.rs:5:1
+  |
+5 | #[gpu_use = 100]
+  | ^^^^^^^^^^^^^^^^
+
+error: expected name of helper function
+ --> $DIR/macro_usage_4.rs:5:13
+  |
+5 | #[gpu_use = 100]
+  |             ^^^

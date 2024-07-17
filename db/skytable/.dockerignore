@@ -1,0 +1,8 @@
+# Ignore everything else
+*
+
+# Only include the skyd binary
+!target/release/skyd
+!target/release/skysh
+!examples/config-files/dpkg/config.yaml
+!pkg/docker/start-server.sh

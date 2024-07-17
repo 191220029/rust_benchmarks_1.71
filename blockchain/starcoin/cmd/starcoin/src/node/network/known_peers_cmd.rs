@@ -1,0 +1,30 @@
+// Copyright (c) The Starcoin Core Contributors
+// SPDX-License-Identifier: Apache-2.0
+
+use crate::cli_state::CliState;
+use crate::StarcoinOpt;
+use anyhow::Result;
+use clap::Parser;
+use network_p2p_types::peer_id::PeerId;
+use scmd::{CommandAction, ExecContext};
+
+#[derive(Debug, Parser, Default)]
+#[clap(name = "known_peers")]
+pub struct KnownPeersOpt {}
+
+pub struct KnownPeersCommand;
+
+impl CommandAction for KnownPeersCommand {
+    type State = CliState;
+    type GlobalOpt = StarcoinOpt;
+    type Opt = KnownPeersOpt;
+    type ReturnItem = Vec<PeerId>;
+
+    fn run(
+        &self,
+        ctx: &ExecContext<Self::State, Self::GlobalOpt, Self::Opt>,
+    ) -> Result<Self::ReturnItem> {
+        let client = ctx.state().client();
+        client.network_known_peers()
+    }
+}

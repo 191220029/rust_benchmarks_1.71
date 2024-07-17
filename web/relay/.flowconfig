@@ -1,0 +1,44 @@
+[ignore]
+<PROJECT_ROOT>/dist/.*
+<PROJECT_ROOT>/compiler/.*
+<PROJECT_ROOT>/.*/node_modules/.*
+.*/node_modules/resolve/test/resolver/malformed_package_json/package.json
+
+[options]
+module.system=haste
+module.system.haste.use_name_reducers=true
+# get basename
+module.system.haste.name_reducers='^.*/\([a-zA-Z0-9$_.-]+\.js\(\.flow\)?\)$' -> '\1'
+# strip .js or .js.flow suffix
+module.system.haste.name_reducers='^\(.*\)\.js\(\.flow\)?$' -> '\1'
+
+module.system.haste.paths.excludes=.*/__tests__/.*
+module.system.haste.paths.excludes=.*/__mocks__/.*
+module.system.haste.paths.includes=<PROJECT_ROOT>/node_modules/fbjs/lib/.*
+
+munge_underscores=true
+experimental.global_find_ref=true
+; https://fburl.com/code/h2jnts20 - to match internval value
+
+suppress_type=$FlowIssue
+suppress_type=$FlowFixMe
+suppress_type=$FlowFixMeProps
+suppress_type=$FlowFixMeState
+suppress_type=$FlowExpectedError
+
+format.bracket_spacing=false
+
+[lints]
+untyped-type-import=error
+
+[strict]
+deprecated-type
+nonstrict-import
+sketchy-null
+unclear-type
+unsafe-getters-setters
+untyped-import
+untyped-type-import
+
+[version]
+^0.233.0

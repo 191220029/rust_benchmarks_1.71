@@ -1,0 +1,33 @@
+# my global config
+global:
+  scrape_interval:     15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
+  evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.
+  # scrape_timeout is set to the global default (10s).
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+  - static_configs:
+    - targets:
+      - 127.0.0.1:9093
+
+# Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
+rule_files:
+  - "rule.yml"
+  # - "second_rules.yml"
+
+# A scrape configuration containing exactly one endpoint to scrape:
+# Here it's Prometheus itself.
+scrape_configs:
+  - job_name: 'halley'
+    static_configs:
+    - targets: ['halley1.seed.starcoin.org:9101']
+  - job_name: 'proxima'
+    static_configs:
+      - targets: ['proxima1.seed.starcoin.org:9101']
+  - job_name: 'barnard'
+    static_configs:
+      - targets: ['barnard4.seed.starcoin.org:9101', 'barnard5.seed.starcoin.org:9101', 'barnard6.seed.starcoin.org:9101' ]
+  - job_name: 'main'
+    static_configs:
+      - targets: [ 'main1.seed.starcoin.org:9101', 'main2.seed.starcoin.org:9101', 'main3.seed.starcoin.org:9101','main4.seed.starcoin.org:9101', 'main5.seed.starcoin.org:9101', 'main6.seed.starcoin.org:9101','main7.seed.starcoin.org:9101', 'main8.seed.starcoin.org:9101', 'main9.seed.starcoin.org:9101'  ]

@@ -1,0 +1,34 @@
+[dependencies]
+anyhow = { workspace = true }
+async-trait = { workspace = true }
+futures = { workspace = true }
+network-api = { package = "network-api", workspace = true }
+rand = { workspace = true }
+rand_core = { default-features = false, workspace = true }
+serde = { default-features = false, workspace = true }
+starcoin-accumulator = { workspace = true }
+starcoin-crypto = { workspace = true }
+starcoin-service-registry = { workspace = true }
+starcoin-state-api = { workspace = true }
+starcoin-statedb = { workspace = true }
+starcoin-time-service = { workspace = true }
+starcoin-types = { workspace = true }
+starcoin-vm-types = { workspace = true }
+thiserror = { workspace = true }
+
+
+[dev-dependencies]
+
+[features]
+mock = []
+
+[package]
+authors = { workspace = true }
+edition = { workspace = true }
+license = { workspace = true }
+name = "starcoin-chain-api"
+publish = { workspace = true }
+version = "1.13.11"
+homepage = { workspace = true }
+repository = { workspace = true }
+rust-version = { workspace = true }

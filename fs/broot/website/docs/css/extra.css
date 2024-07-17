@@ -1,0 +1,153 @@
+/********************/
+/* standard classes */
+
+body::before {
+	background: 0;
+}
+
+body {
+	font-size: 17px;
+}
+
+body .col-md-9 p img {
+	background-color: transparent;
+}
+
+.sponsorship {
+	margin-top: 20px;
+	display: flex;
+	flex-direction: row;
+
+}
+.sponsorship a {
+	margin-right: 10px;
+}
+
+
+h1 {
+	font-size: 22px;
+	border-bottom: solid 1px;
+	padding-bottom: 8px;
+	margin: 30px 0 20px 0;
+	border-image-source: linear-gradient(to right, #178acc, #fff);
+	border-image-slice: 1;
+}
+h2 {
+	font-size: 19px;
+}
+h3 {
+	font-size: 16px;
+}
+
+.navbar {
+	//background-image: linear-gradient(#184965,#02121b);
+	background: #1b465f;
+}
+
+@media (min-width: 768px) {
+	.navbar-brand, .navbar-nav > li > a {
+		padding-top: 18px;
+		padding-bottom: 12px;
+	}
+}
+
+pre {
+	padding: 0;
+	border-radius: 0;
+}
+
+kbd {
+	padding: 2px 4px;
+	color: #fff;
+	background-color: #333;
+	border-radius: 2px;
+	box-shadow: none;
+	margin: 1px;
+}
+
+kbd.b {
+	font-size: 18px;
+	padding: 0 5px;
+}
+
+.col-md-9 {
+	max-width: 1000px;
+}
+.col-md-9 img {
+	max-width: 100%;
+	display: inline-block;
+	padding: 0;
+	line-height: 1.428571429;
+	background-color: #fff;
+	border: none;
+	border-radius: 0;
+	margin: 10px auto 20px auto;
+}
+.navbar-collapse {
+	padding-left: 0;
+}
+.bs-sidenav.nav li {
+	padding-left: 10px;
+}
+.bs-sidenav.nav li.main {
+	padding-left: 0px;
+}
+.navbar-brand {
+	background: url(../img/vache-blanche.svg) no-repeat;
+	background-position: left center;
+	background-size: 40px 40px;
+	padding-left: 50px;
+}
+
+.bs-sidebar .nav > li > a {
+	border-right: 1px solid transparent;
+}
+.bs-sidebar .nav > .active > a,
+.bs-sidebar .nav > .active:hover > a,
+.bs-sidebar .nav > .active:focus > a {
+	font-weight: initial;
+	background-color: #bed7e632;
+	border-right: 1px solid;
+}
+.bs-sidebar .nav > .main.active > a,
+.bs-sidebar .nav > .main.active:hover > a,
+.bs-sidebar .nav > .main.active:focus > a {
+    /*font-weight: bold;*/
+}
+
+/******************/
+/* custom classes */
+
+.toc-header {
+	font-weight: bold;
+	font-size: 18px;
+	margin-left: 20px;
+	padding-bottom: 8px;
+	border-bottom: thin solid #335;
+}
+
+.logo-wrap {
+	display: flex;
+	height: 90px;
+	align-items: center;
+	justify-content: center;
+}
+.logo-wrap img {
+	width: 70px;
+}
+
+.install-link {
+	font-size: 15px;
+	margin: 10px 0 10px 0px;
+	text-align:center;
+	background: #133d55;
+	border-radius: 2px;
+	padding: 8px 10px;
+	color: white;
+    box-shadow: 2px 2px 5px #00000047;
+}
+.install-link:hover {
+    box-shadow: 1px 1px 2px #00000047;
+	color: wheat;
+    text-decoration: none;
+}

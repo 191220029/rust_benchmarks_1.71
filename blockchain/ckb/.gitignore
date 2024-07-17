@@ -1,0 +1,67 @@
+# Compiled files
+*.o
+*.so
+*.rlib
+*.dll
+
+# Executables
+*.exe
+
+# intermedia file directory
+target/
+target-cache/
+*/target/
+# target symlink in integration test folder
+test/target
+
+# Cargo lock in subs
+**/Cargo.lock
+
+# editor specific
+# vim stuff
+*.swp
+# emacs stuff
+*~
+# vscode
+.vscode
+# jetbrains ide stuff
+.idea
+*.iml
+# mac stuff
+.DS_Store
+# ctags
+tags
+# project env
+.env
+
+# vagrant file
+.vagrant
+
+# runtime folder
+/ckb.toml
+/ckb-miner.toml
+/default.db-options
+/data
+/specs
+/ckb-dev
+/ckb-testnet
+/ckb-mainnet
+
+# tmp files
+*.pyc
+/test/integration.log
+/test/integration.failure
+cargo-publish.log
+*.bak
+
+# generated files
+cobertura.xml
+/rpc/json/rpc.expect.json
+
+# proptest
+**/proptest-regressions
+
+# generated coverage report files
+*.profraw
+lcov-unit-test.info
+lcov-integration-test.info

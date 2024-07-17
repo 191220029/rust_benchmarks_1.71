@@ -1,0 +1,44 @@
+
+running 29 tests
+test config::tests::it_errors_on_deprecated_provider_missing_features_from_toml ... ok
+test config::tests::it_errors_on_deprecated_provider_missing_url_from_toml ... ok
+test config::tests::duplicated_labels_are_allowed_on_different_chain ... ok
+test config::tests::fails_if_non_substreams_provider_for_substreams_protocol ... ok
+test config::tests::fails_if_only_substreams_provider_for_non_substreams_protocol ... ok
+test config::tests::it_errors_on_new_provider_with_deprecated_fields_from_toml ... ok
+test config::tests::duplicated_labels_are_not_allowed_within_chain ... ok
+test config::tests::it_parses_web3_default_empty_unlimited ... ok
+test config::tests::it_works_on_chain_with_protocol ... ok
+test config::tests::it_errors_on_firehose_provider_with_high_limit ... ok
+test config::tests::it_errors_on_substreams_provider_with_high_limit ... ok
+test config::tests::it_works_on_chain_without_protocol ... ok
+test config::tests::it_works_on_deprecated_provider_from_toml ... ok
+test config::tests::it_works_on_deprecated_provider_without_transport_from_toml ... ok
+test config::tests::it_parses_web3_provider_rules ... ok
+test config::tests::it_works_on_new_firehose_provider_from_toml ... ok
+test config::tests::it_works_on_new_firehose_provider_from_toml_no_features ... ok
+test config::tests::it_works_on_new_firehose_provider_from_toml_unsupported_features ... ok
+test config::tests::it_works_on_new_web3_provider_without_transport_from_toml ... ok
+test config::tests::it_works_on_new_web3_provider_from_toml ... ok
+test config::tests::it_works_on_new_firehose_provider_with_doc_example_match ... ok
+test config::tests::it_works_on_substreams_provider_from_toml ... ok
+test config::tests::it_works_on_new_substreams_provider_with_doc_example_match ... ok
+test config::tests::it_works_on_substreams_provider_from_toml_with_api_key ... ok
+test config::tests::it_works_on_web3call_provider_without_transport_from_toml ... ok
+test config::tests::web3rules_have_the_right_order ... ok
+test config::tests::polling_interval ... ok
+test config::tests::it_works_on_standard_config ... ok
+test chain::test::correctly_parse_ethereum_networks ... ok
+
+test result: ok. 29 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.16s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

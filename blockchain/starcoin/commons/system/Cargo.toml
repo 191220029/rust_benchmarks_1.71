@@ -1,0 +1,11 @@
+[package]
+authors = ["Starcoin Core Dev <dev@starcoin.org>"]
+edition = "2021"
+license = "Apache-2.0"
+name = "starcoin-system"
+publish = false
+version = "1.13.11"
+
+[dependencies]
+anyhow = { workspace = true }
+systemstat = "0.1.6"

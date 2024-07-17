@@ -1,0 +1,4 @@
+{
+    "compile_time_type": "Single",
+    "cargo_opts": "--bin bat"
+}

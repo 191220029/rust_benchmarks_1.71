@@ -1,0 +1,4 @@
+{
+    "cargo_toml": "./cli/Cargo.toml",
+    "cargo_opts": "--bin skysh"
+}

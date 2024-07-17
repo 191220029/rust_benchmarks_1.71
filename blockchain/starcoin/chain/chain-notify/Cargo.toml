@@ -1,0 +1,18 @@
+[dependencies]
+anyhow = { workspace = true }
+starcoin-crypto = { workspace = true }
+starcoin-logger = { workspace = true }
+starcoin-service-registry = { workspace = true }
+starcoin-storage = { workspace = true }
+starcoin-types = { workspace = true }
+
+[package]
+authors = { workspace = true }
+edition = { workspace = true }
+license = { workspace = true }
+name = "starcoin-chain-notify"
+publish = { workspace = true }
+version = "1.13.11"
+homepage = { workspace = true }
+repository = { workspace = true }
+rust-version = { workspace = true }

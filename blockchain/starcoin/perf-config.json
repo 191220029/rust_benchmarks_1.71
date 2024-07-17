@@ -1,0 +1,7 @@
+{
+    "compile_time_type": "Packages",
+    "runtime_test_type": "Test",
+    "packages": [
+        "starcoin-node"
+    ]
+}

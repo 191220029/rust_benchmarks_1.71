@@ -1,0 +1,152 @@
+on:
+  push:
+    tags:
+      - "v*"
+
+name: Release
+
+env:
+  CARGO_TERM_COLOR: always
+  VERSION: ${{ github.ref_name }}
+
+jobs:
+  build_64bit:
+    name: Build artifacts (64-bit)
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        rust:
+          [
+            x86_64-unknown-linux-gnu,
+            x86_64-unknown-linux-musl,
+            x86_64-apple-darwin,
+            x86_64-pc-windows-msvc,
+          ]
+        include:
+          - rust: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+            artifact: x86_64-linux-gnu
+          - rust: x86_64-unknown-linux-musl
+            os: ubuntu-latest
+            artifact: x86_64-linux-musl
+          - rust: x86_64-apple-darwin
+            os: macos-latest
+            artifact: x86_64-macos
+          - rust: x86_64-pc-windows-msvc
+            os: windows-latest
+            artifact: x86_64-windows
+    env:
+      RUST_BACKTRACE: 1
+      TARGET: ${{ matrix.rust }}
+      ARTIFACT: ${{ matrix.artifact }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Restore cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ./target
+          key: ${{ matrix.rust }}-cargocache-${{ hashFiles('Cargo.lock') }}
+
+      - name: Install Rust
+        run: |
+          rustup default stable
+          rustup target add ${{ matrix.rust }}
+
+      - name: Install MUSL tools
+        run: sudo apt update && sudo apt install musl-tools -y
+        if: matrix.rust == 'x86_64-unknown-linux-musl'
+
+      - name: Make bundle
+        run: make bundle
+
+      - name: Build Linux packages
+        run: make deb
+        if: runner.os == 'Linux'
+
+      - name: Upload assets
+        uses: actions/upload-artifact@v2
+        with:
+          path: |
+            *.zip
+            *.deb
+          name: packages
+
+  build_32bit:
+    name: Build artifacts (32-bit)
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            rust: i686-unknown-linux-gnu
+            artifact: i686-linux-gnu
+          - os: windows-latest
+            artifact: i686-windows
+            rust: i686-pc-windows-msvc
+
+    env:
+      RUST_BACKTRACE: 1
+      TARGET: ${{ matrix.rust }}
+      ARTIFACT: ${{ matrix.artifact }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Restore cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ./target
+          key: ${{ matrix.rust }}-cargocache-${{ hashFiles('Cargo.lock') }}
+
+      - name: Install 32-bit tools (Linux)
+        run: sudo apt update && sudo apt install gcc-multilib -y
+        if: runner.os == 'Linux'
+
+      - name: Install Rust
+        run: rustup target add ${{ matrix.rust }}
+
+      - name: Make bundle
+        run: make bundle
+
+      - name: Build Linux packages
+        run: make deb
+        if: runner.os == 'Linux'
+
+      - name: Upload assets
+        uses: actions/upload-artifact@v2
+        with:
+          path: |
+            *.zip
+            *.deb
+          name: packages
+
+  release:
+    name: Release
+    needs:
+      - build_64bit
+      - build_32bit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Download all artifacts
+        uses: actions/download-artifact@v2
+        with:
+          path: artifacts
+      - name: Install GitHub CLI
+        run: |
+          sudo apt update
+          sudo apt install gh -y
+      - name: Upload release binaries
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_PUBLISH_TOKEN }}
+          TAG_NAME: ${{ env.VERSION }}
+        run: |
+          gh auth login --with-token <<< $GITHUB_TOKEN
+          for file in $(find ./artifacts/ -type f -name "*.zip" -o -name "*.deb"); do
+            gh release upload "$TAG_NAME" "$file"
+          done

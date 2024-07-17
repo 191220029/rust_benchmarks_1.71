@@ -1,0 +1,38 @@
+[dependencies]
+anyhow = { workspace = true }
+async-trait = { workspace = true }
+futures = { workspace = true }
+rand = { workspace = true }
+rand_core = { default-features = false, workspace = true }
+serde = { default-features = false, workspace = true }
+starcoin-chain = { workspace = true }
+starcoin-chain-api = { workspace = true }
+starcoin-config = { workspace = true }
+starcoin-crypto = { workspace = true }
+starcoin-logger = { workspace = true }
+starcoin-service-registry = { workspace = true }
+starcoin-state-api = { workspace = true }
+starcoin-storage = { workspace = true }
+starcoin-types = { workspace = true }
+starcoin-vm-runtime = { workspace = true }
+starcoin-vm-types = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+
+[dev-dependencies]
+stest = { workspace = true }
+test-helper = { workspace = true }
+
+[features]
+mock = []
+
+[package]
+authors = { workspace = true }
+edition = { workspace = true }
+license = { workspace = true }
+name = "starcoin-chain-service"
+publish = { workspace = true }
+version = "1.13.11"
+homepage = { workspace = true }
+repository = { workspace = true }
+rust-version = { workspace = true }

@@ -1,0 +1,19 @@
+[dependencies]
+anyhow = { workspace = true }
+async-trait = { workspace = true }
+futures-channel = { workspace = true }
+schemars = { workspace = true }
+serde = { default-features = false, workspace = true }
+starcoin-crypto = { workspace = true }
+starcoin-types = { package = "starcoin-types", workspace = true }
+
+[package]
+authors = { workspace = true }
+edition = { workspace = true }
+license = { workspace = true }
+name = "starcoin-txpool-api"
+publish = { workspace = true }
+version = "1.13.11"
+homepage = { workspace = true }
+repository = { workspace = true }
+rust-version = { workspace = true }
