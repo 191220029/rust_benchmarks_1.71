@@ -28,3 +28,6 @@ psutil = { version = "3.2", default-features = false, features = [
     "process",
 ] }
 timeout-join-handler = { workspace = true }
+
+[lib]
+doctest = false

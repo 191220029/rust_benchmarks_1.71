@@ -8,6 +8,7 @@ version = "1.13.11"
 
 [lib]
 proc-macro = true
+doctest = false
 
 [dependencies]
 darling = { workspace = true }
@@ -18,3 +19,4 @@ syn = { workspace = true }
 actix = { workspace = true }
 actix-rt = { workspace = true }
 stest = { workspace = true }
+

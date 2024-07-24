@@ -52,3 +52,6 @@ rust-version = { workspace = true }
 default-features = false
 features = ["lz4"]
 workspace = true
+
+[lib]
+doctest = false

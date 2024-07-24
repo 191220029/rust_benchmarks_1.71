@@ -3,5 +3,9 @@
     "packages": [
         "graph_derive",
         "substreams-head-tracker"
+    ],
+    "runtime_test_type": "Packages",
+    "runtime_test_packages": [
+        "graph_derive"
     ]
 }

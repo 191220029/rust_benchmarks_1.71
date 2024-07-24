@@ -63,3 +63,4 @@ name = "bench_vm"
 
 [target."cfg(target_os=\"linux\")".dependencies]
 pprof = { version = "0.10", features = ["flamegraph", "criterion"] }
+

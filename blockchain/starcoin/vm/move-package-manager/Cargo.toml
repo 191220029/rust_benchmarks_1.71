@@ -69,3 +69,6 @@ publish = { workspace = true }
 repository = { workspace = true }
 version = "1.13.11"
 rust-version = { workspace = true }
+
+[lib]
+doctest = false

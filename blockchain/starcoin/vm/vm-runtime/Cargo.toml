@@ -42,3 +42,6 @@ stdlib = { package = "stdlib", workspace = true }
 default = ["metrics"]
 metrics = ["starcoin-metrics"]
 testing = ["move-stdlib/testing", "starcoin-natives/testing"]
+
+[lib]
+doctest = false

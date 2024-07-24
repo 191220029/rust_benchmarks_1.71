@@ -3,9 +3,9 @@ mod bigint;
 mod bytes;
 mod timestamp;
 
+pub use self::bytes::Bytes;
 pub use bigdecimal::BigDecimal;
 pub use bigint::{BigInt, BigIntSign};
-pub use self::bytes::Bytes;
 pub use old_bigdecimal::ToPrimitive;
 pub use timestamp::Timestamp;
 

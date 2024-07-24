@@ -49,3 +49,6 @@ starcoin-state-tree = { workspace = true }
 # cached-framework-packages = { path = "../framework/cached-packages" }
 # move-deps = { path = "../move-deps", features = ["address32"] }
 # vm-genesis = { path = "../vm-genesis" }
+
+[lib]
+doctest = false

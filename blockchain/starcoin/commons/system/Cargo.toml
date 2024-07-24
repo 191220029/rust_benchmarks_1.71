@@ -9,3 +9,6 @@ version = "1.13.11"
 [dependencies]
 anyhow = { workspace = true }
 systemstat = "0.1.6"
+
+[lib]
+doctest = false

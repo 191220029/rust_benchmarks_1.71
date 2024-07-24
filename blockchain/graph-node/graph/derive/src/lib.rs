@@ -243,37 +243,38 @@ mod tests {
 
     #[test]
     fn cheap_clone() {
-        assert_expansion!(
-            #[derive(impl_cheap_clone)]
-            struct Empty;,
-            {
-                impl graph::cheap_clone::CheapClone for Empty {
-                    fn cheap_clone(&self) -> Self {
-                        Self
-                    }
-                }
-            }
-        );
-
-        assert_expansion!(
-            #[derive(impl_cheap_clone)]
-            struct Foo<T> {
-                a: T,
-                b: u32,
-            },
-            {
-                impl<T: graph::cheap_clone::CheapClone> graph::cheap_clone::CheapClone for Foo<T> {
-                    fn cheap_clone(&self) -> Self {
-                        Self {
-                            a: self.a.cheap_clone(),
-                            b: self.b.cheap_clone(),
+        for _ in 0..10000 {
+            assert_expansion!(
+                #[derive(impl_cheap_clone)]
+                struct Empty;,
+                {
+                    impl graph::cheap_clone::CheapClone for Empty {
+                        fn cheap_clone(&self) -> Self {
+                            Self
                         }
                     }
                 }
-            }
-        );
+            );
 
-        #[rustfmt::skip]
+            assert_expansion!(
+                #[derive(impl_cheap_clone)]
+                struct Foo<T> {
+                    a: T,
+                    b: u32,
+                },
+                {
+                    impl<T: graph::cheap_clone::CheapClone> graph::cheap_clone::CheapClone for Foo<T> {
+                        fn cheap_clone(&self) -> Self {
+                            Self {
+                                a: self.a.cheap_clone(),
+                                b: self.b.cheap_clone(),
+                            }
+                        }
+                    }
+                }
+            );
+
+            #[rustfmt::skip]
         assert_expansion!(
             #[derive(impl_cheap_clone)]
             struct Bar(u32, u32);,
@@ -286,7 +287,7 @@ mod tests {
             }
         );
 
-        #[rustfmt::skip]
+            #[rustfmt::skip]
         assert_expansion!(
             #[derive(impl_cheap_clone)]
             enum Bar {
@@ -309,5 +310,6 @@ mod tests {
                 }
             }
         );
+        }
     }
 }

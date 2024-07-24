@@ -13,3 +13,6 @@ homepage = { workspace = true }
 publish = { workspace = true }
 repository = { workspace = true }
 rust-version = { workspace = true }
+
+[lib]
+doctest = false

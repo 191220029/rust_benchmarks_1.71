@@ -89,3 +89,6 @@ version = "1.13.11"
 homepage = { workspace = true }
 repository = { workspace = true }
 rust-version = { workspace = true }
+
+[lib]
+doctest = false

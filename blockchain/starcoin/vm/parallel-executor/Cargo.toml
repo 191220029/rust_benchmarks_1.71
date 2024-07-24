@@ -33,6 +33,7 @@ proptest-derive = { workspace = true }
 
 [lib]
 bench = false
+doctest = false
 
 [[bench]]
 name = "scheduler_benches"
@@ -46,3 +47,4 @@ fuzzing = [
     "proptest",
     "proptest-derive"
 ]
+

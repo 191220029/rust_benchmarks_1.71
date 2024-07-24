@@ -15,3 +15,6 @@ proptest = { workspace = true }
 proptest-derive = { workspace = true }
 
 
+
+[lib]
+doctest = false
