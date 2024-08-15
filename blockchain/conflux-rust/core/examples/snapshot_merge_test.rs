@@ -99,6 +99,8 @@ fn main() -> Result<(), Error> {
             delta_mpt_iterator,
             info,
             &storage_manager.snapshot_info_map_by_epoch,
+            height,
+            false,
         )?;
     storage_manager.register_new_snapshot(
         snapshot_info1.clone(),
@@ -168,6 +170,8 @@ fn main() -> Result<(), Error> {
             delta_mpt_iterator,
             info,
             &storage_manager.snapshot_info_map_by_epoch,
+            height,
+            false,
         )?;
     println!(
         "After merging: {:?}, accounts size {}",
@@ -182,6 +186,7 @@ fn main() -> Result<(), Error> {
         .get_snapshot_by_epoch_id(
             &snapshot2_epoch,
             /* try_open = */ false,
+            true,
         )?
         .expect("exists");
     for (addr, account) in &accounts_map {
@@ -232,6 +237,8 @@ fn main() -> Result<(), Error> {
             delta_mpt_iterator,
             info,
             &storage_manager.snapshot_info_map_by_epoch,
+            height,
+            false,
         )?;
     storage_manager.register_new_snapshot(
         snapshot_info3.clone(),
@@ -293,6 +300,7 @@ fn new_state_manager(
     let mut storage_conf = StorageConfiguration::new_default(
         conflux_data_dir,
         cfx_parameters::consensus::SNAPSHOT_EPOCHS_CAPACITY,
+        cfx_parameters::consensus::ERA_DEFAULT_EPOCH_COUNT,
     );
     storage_conf.consensus_param.snapshot_epoch_count = 10000000;
     Ok(Arc::new(StateManager::new(storage_conf).unwrap()))
@@ -421,7 +429,7 @@ where
     Iter: Iterator<Item = (&'a AddressWithSpace, &'a Account)>,
 {
     let state = manager
-        .get_state_for_next_epoch(state_index)
+        .get_state_for_next_epoch(state_index, false)
         .unwrap()
         .unwrap();
     let mut state = StateDb::new(state);

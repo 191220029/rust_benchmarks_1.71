@@ -324,7 +324,9 @@ impl Histogram for ExpDecaySample {
             / Duration::from_secs(1).as_nanos() as f64
             * self.alpha;
         let k = k.exp() * rand::thread_rng().gen_range(0.0, 1.0);
-        data.values.push(ExpDecaySampleItem { k, v });
+        if k.is_normal() {
+            data.values.push(ExpDecaySampleItem { k, v });
+        }
 
         if now > data.t1 {
             let items: Vec<ExpDecaySampleItem> = data.values.drain().collect();
@@ -337,7 +339,9 @@ impl Histogram for ExpDecaySample {
                     / Duration::from_secs(1).as_nanos() as f64
                     * (-self.alpha);
                 item.k *= k.exp();
-                data.values.push(item);
+                if k.is_normal() {
+                    data.values.push(item);
+                }
             }
         }
     }
@@ -366,13 +370,16 @@ impl Eq for ExpDecaySampleItem {}
 
 impl PartialOrd for ExpDecaySampleItem {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        other.k.partial_cmp(&self.k)
+        Some(self.cmp(other))
     }
 }
 
 impl Ord for ExpDecaySampleItem {
     // for k, the smaller, the bigger
     fn cmp(&self, other: &Self) -> Ordering {
-        self.partial_cmp(other).expect("k should be comparable")
+        other
+            .k
+            .partial_cmp(&self.k)
+            .expect("k should be comparable")
     }
 }

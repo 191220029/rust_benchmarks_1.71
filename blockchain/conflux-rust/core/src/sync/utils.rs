@@ -10,6 +10,7 @@ use cfx_internal_common::ChainIdParamsInner;
 use cfx_parameters::{
     block::{MAX_BLOCK_SIZE_IN_BYTES, REFEREE_DEFAULT_BOUND},
     consensus::{GENESIS_GAS_LIMIT, TRANSACTION_DEFAULT_EPOCH_BOUND},
+    tx_pool::TXPOOL_DEFAULT_NONCE_BITS,
     WORKER_COMPUTATION_PARALLELISM,
 };
 use cfx_storage::{StorageConfiguration, StorageManager};
@@ -131,6 +132,7 @@ pub fn initialize_data_manager(
         StorageManager::new(StorageConfiguration::new_default(
             db_dir,
             cfx_parameters::consensus::SNAPSHOT_EPOCHS_CAPACITY,
+            cfx_parameters::consensus::ERA_DEFAULT_EPOCH_COUNT,
         ))
         .expect("Failed to initialize storage."),
     );
@@ -205,6 +207,7 @@ pub fn initialize_synchronization_graph_with_data_manager(
         REFEREE_DEFAULT_BOUND,
         MAX_BLOCK_SIZE_IN_BYTES,
         TRANSACTION_DEFAULT_EPOCH_BOUND,
+        TXPOOL_DEFAULT_NONCE_BITS,
         machine.clone(),
         pos_verifier.clone(),
     );
@@ -251,6 +254,8 @@ pub fn initialize_synchronization_graph_with_data_manager(
                 debug_dump_dir_invalid_state_root: None,
                 debug_invalid_state_root_epoch: None,
                 force_recompute_height_during_construct_pivot: None,
+                recovery_latest_mpt_snapshot: false,
+                use_isolated_db_for_mpt_table: false,
             },
             bench_mode: true, /* Set bench_mode to true so that we skip
                                * execution */
