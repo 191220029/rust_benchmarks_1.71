@@ -47,7 +47,7 @@ const {
   disallowWarnings,
   expectToWarn,
   expectWarningWillFire,
-} = require('relay-test-utils-internal');
+} = (jest.requireActual('relay-test-utils-internal'): $FlowFixMe);
 
 const defaultFetchPolicy = 'network-only';
 
@@ -112,10 +112,11 @@ let logs: Array<LogEvent>;
 let errorBoundaryDidCatchFn;
 let useFragmentImpl: typeof useFragment;
 
+disallowWarnings();
+disallowConsoleErrors();
+
 beforeEach(() => {
   jest.resetModules();
-  disallowWarnings();
-  disallowConsoleErrors();
 
   useFragmentImpl = useFragment;
 
@@ -128,10 +129,10 @@ beforeEach(() => {
       this.setState({error});
     }
     render(): any | React.Node {
-      const {children, fallback} = this.props;
+      const {children, fallback: Fallback} = this.props;
       const {error} = this.state;
       if (error) {
-        return React.createElement(fallback, {error});
+        return <Fallback error={error} />;
       }
       return children;
     }

@@ -24,6 +24,9 @@ pub struct FeatureFlags {
     pub enable_relay_resolver_transform: bool,
 
     #[serde(default)]
+    pub enable_catch_directive_transform: FeatureFlag,
+
+    #[serde(default)]
     // Enable returning interfaces from Relay Resolvers without @outputType
     pub relay_resolver_enable_interface_output_type: FeatureFlag,
 
@@ -53,21 +56,22 @@ pub struct FeatureFlags {
     #[serde(default)]
     pub enable_fragment_aliases: FeatureFlag,
 
+    /// Enforce that you must add `@alias` to a fragment if it may not match,
+    /// due to type mismatch or `@skip`/`@include`
+    #[serde(default)]
+    pub enforce_fragment_alias_where_ambiguous: FeatureFlag,
+
     /// Print queries in compact form
     #[serde(default)]
     pub compact_query_text: FeatureFlag,
 
     /// Create normalization nodes for client edges to client objects
-    #[serde(default)]
+    #[serde(default = "default_as_true")]
     pub emit_normalization_nodes_for_client_edges: bool,
 
     /// Fully build the normalization AST for Resolvers
     #[serde(default)]
     pub enable_resolver_normalization_ast: bool,
-
-    /// Allow legacy verbose resolver syntax
-    #[serde(default)]
-    pub relay_resolvers_allow_legacy_verbose_syntax: FeatureFlag,
 
     /// Allow relay resolvers to extend the Mutation type
     #[serde(default)]
@@ -104,6 +108,29 @@ pub struct FeatureFlags {
     /// Allow non-nullable return types from resolvers.
     #[serde(default)]
     pub allow_resolver_non_nullable_return_type: FeatureFlag,
+
+    /// Disable validating the composite schema (server, client schema
+    /// extensions, Relay Resolvers) after its built.
+    #[serde(default)]
+    pub disable_schema_validation: bool,
+
+    /// Disallow the `@required` directive on fields that are already non-null
+    /// in the schema.
+    #[serde(default)]
+    pub disallow_required_on_non_null_fields: bool,
+
+    /// Feature flag to prefer `fetch_MyType()` generatior over `node()` query generator
+    /// in @refetchable transform
+    #[serde(default)]
+    pub prefer_fetchable_in_refetch_queries: bool,
+
+    /// Disable validation of the `edgeTypeName` argument on `@prependNode` and `@appendNode`.
+    #[serde(default)]
+    pub disable_edge_type_name_validation_on_declerative_connection_directives: FeatureFlag,
+}
+
+fn default_as_true() -> bool {
+    true
 }
 
 #[derive(Debug, Deserialize, Clone, Serialize, Default)]

@@ -58,7 +58,7 @@ let SingularRenderer;
 let PluralRenderer;
 let ContextProvider;
 
-function useFragment(
+hook useFragment(
   fragmentNode:
     | Fragment<
         useFragmentTestUserFragment$fragmentType,
@@ -70,6 +70,7 @@ function useFragment(
       >,
   fragmentRef: any,
 ) {
+  // $FlowFixMe[incompatible-call]
   const data = useFragmentImpl(fragmentNode, fragmentRef);
   renderSpy(data);
   return data;

@@ -14,6 +14,7 @@
 import type {
   ReaderActorChange,
   ReaderAliasedFragmentSpread,
+  ReaderCatchField,
   ReaderClientEdge,
   ReaderFragment,
   ReaderFragmentSpread,
@@ -51,6 +52,7 @@ const {
   ACTOR_CHANGE,
   ALIASED_FRAGMENT_SPREAD,
   ALIASED_INLINE_FRAGMENT_SPREAD,
+  CATCH_FIELD,
   CLIENT_EDGE_TO_CLIENT_OBJECT,
   CLIENT_EDGE_TO_SERVER_OBJECT,
   CLIENT_EXTENSION,
@@ -93,6 +95,8 @@ const {
 const {generateTypeID} = require('./TypeID');
 const invariant = require('invariant');
 
+type RequiredOrCatchField = ReaderRequiredField | ReaderCatchField;
+
 function read(
   recordSource: RecordSource,
   selector: SingularReaderSelector,
@@ -132,11 +136,9 @@ class RelayReader {
     selector: SingularReaderSelector,
     resolverCache: ResolverCache,
   ) {
-    this._clientEdgeTraversalPath =
-      RelayFeatureFlags.ENABLE_CLIENT_EDGES &&
-      selector.clientEdgeTraversalPath?.length
-        ? [...selector.clientEdgeTraversalPath]
-        : [];
+    this._clientEdgeTraversalPath = selector.clientEdgeTraversalPath?.length
+      ? [...selector.clientEdgeTraversalPath]
+      : [];
     this._missingClientEdges = [];
     this._missingLiveResolverFields = [];
     this._isMissingData = false;
@@ -219,10 +221,9 @@ class RelayReader {
     return {
       data,
       isMissingData: this._isMissingData && isDataExpectedToBePresent,
-      missingClientEdges:
-        RelayFeatureFlags.ENABLE_CLIENT_EDGES && this._missingClientEdges.length
-          ? this._missingClientEdges
-          : null,
+      missingClientEdges: this._missingClientEdges.length
+        ? this._missingClientEdges
+        : null,
       missingLiveResolverFields: this._missingLiveResolverFields,
       seenRecords: this._seenRecords,
       selector: this._selector,
@@ -236,6 +237,7 @@ class RelayReader {
     if (!RelayFeatureFlags.ENABLE_FIELD_ERROR_HANDLING) {
       return;
     }
+
     const errors = RelayModernRecord.getErrors(record, storageKey);
 
     if (errors == null) {
@@ -257,10 +259,7 @@ class RelayReader {
 
   _markDataAsMissing(): void {
     this._isMissingData = true;
-    if (
-      RelayFeatureFlags.ENABLE_CLIENT_EDGES &&
-      this._clientEdgeTraversalPath.length
-    ) {
+    if (this._clientEdgeTraversalPath.length) {
       const top =
         this._clientEdgeTraversalPath[this._clientEdgeTraversalPath.length - 1];
       // Top can be null if we've traversed past a client edge into an ordinary
@@ -282,7 +281,6 @@ class RelayReader {
   ): ?SelectorData {
     const record = this._recordSource.get(dataID);
     this._seenRecords.add(dataID);
-
     if (record == null) {
       if (record === undefined) {
         this._markDataAsMissing();
@@ -341,6 +339,92 @@ class RelayReader {
     }
   }
 
+  _handleCatchFieldValue(
+    selection: ReaderCatchField,
+    record: Record,
+    data: SelectorData,
+    value: mixed,
+  ) {
+    const {to} = selection;
+    const field = selection.field?.backingField ?? selection.field;
+    const fieldName = field?.alias ?? field?.name;
+
+    // ReaderClientExtension doesn't have `alias` or `name`
+    // so we don't support this yet
+    invariant(
+      fieldName != null,
+      "Couldn't determine field name for this field. It might be a ReaderClientExtension - which is not yet supported.",
+    );
+
+    if (this._errorResponseFields != null) {
+      for (let i = 0; i < this._errorResponseFields.length; i++) {
+        // if it's a @catch - it can only be NULL or RESULT. So we always add the "to" from the CatchField.
+        this._errorResponseFields[i].to = to;
+      }
+    }
+    // If we have a nested @required(THROW)  that will throw,
+    // we want to catch that error and provide it, and remove the original error
+    if (this._missingRequiredFields?.action === 'THROW') {
+      if (this._missingRequiredFields?.field == null) {
+        return;
+      }
+
+      // We want to catch nested @required THROWs
+      if (this._errorResponseFields == null) {
+        this._errorResponseFields = [];
+      }
+
+      const {owner, path} = this._missingRequiredFields.field;
+      this._errorResponseFields.push({
+        owner,
+        path,
+        error: {
+          message: `Relay: Missing @required value at path '${path}' in '${owner}'.`,
+        },
+        to,
+      });
+
+      // remove missing required because we're providing it in catch instead.
+      this._missingRequiredFields = null;
+
+      return;
+    }
+
+    if (this._errorResponseFields != null) {
+      const errors = this._errorResponseFields.map(error => error.error);
+
+      data[fieldName] = {
+        ok: false,
+        errors,
+      };
+      return;
+    }
+
+    data[fieldName] = {
+      ok: true,
+      value,
+    };
+
+    // we do nothing if to is 'NULL'
+  }
+
+  _handleRequiredFieldValue(
+    selection: ReaderRequiredField,
+    value: mixed,
+  ): boolean /*should continue to siblings*/ {
+    if (value == null) {
+      const {action} = selection;
+      if (action !== 'NONE') {
+        this._maybeReportUnexpectedNull(selection.path, action);
+      }
+      // We are going to throw, or our parent is going to get nulled out.
+      // Either way, sibling values are going to be ignored, so we can
+      // bail early here as an optimization.
+      return false;
+    }
+    return true;
+  }
+
   _traverseSelections(
     selections: $ReadOnlyArray<ReaderSelection>,
     record: Record,
@@ -348,21 +432,37 @@ class RelayReader {
   ): boolean /* had all expected data */ {
     for (let i = 0; i < selections.length; i++) {
       const selection = selections[i];
+
       switch (selection.kind) {
-        case REQUIRED_FIELD: {
-          const fieldValue = this._readRequiredField(selection, record, data);
-          if (fieldValue == null) {
-            const {action} = selection;
-            if (action !== 'NONE') {
-              this._maybeReportUnexpectedNull(selection.path, action);
-            }
-            // We are going to throw, or our parent is going to get nulled out.
-            // Either way, sibling values are going to be ignored, so we can
-            // bail early here as an optimization.
+        case REQUIRED_FIELD:
+          const requiredFieldValue = this._readClientSideDirectiveField(
+            selection,
+            record,
+            data,
+          );
+          if (!this._handleRequiredFieldValue(selection, requiredFieldValue)) {
             return false;
           }
           break;
-        }
+        case CATCH_FIELD:
+          const catchFieldValue = this._readClientSideDirectiveField(
+            selection,
+            record,
+            data,
+          );
+          if (RelayFeatureFlags.ENABLE_FIELD_ERROR_HANDLING_CATCH_DIRECTIVE) {
+            /* NULL is old behavior. do nothing. */
+            if (selection.to != 'NULL') {
+              /* @catch(to: RESULT) is the default */
+              this._handleCatchFieldValue(
+                selection,
+                record,
+                data,
+                catchFieldValue,
+              );
+            }
+          }
+          break;
         case SCALAR_FIELD:
           this._readScalar(selection, record, data);
           break;
@@ -437,9 +537,7 @@ class RelayReader {
         case CLIENT_EXTENSION: {
           const isMissingData = this._isMissingData;
           const alreadyMissingClientEdges = this._missingClientEdges.length;
-          if (RelayFeatureFlags.ENABLE_CLIENT_EDGES) {
-            this._clientEdgeTraversalPath.push(null);
-          }
+          this._clientEdgeTraversalPath.push(null);
           const hasExpectedData = this._traverseSelections(
             selection.selections,
             record,
@@ -452,9 +550,7 @@ class RelayReader {
             isMissingData ||
             this._missingClientEdges.length > alreadyMissingClientEdges ||
             this._missingLiveResolverFields.length > 0;
-          if (RelayFeatureFlags.ENABLE_CLIENT_EDGES) {
-            this._clientEdgeTraversalPath.pop();
-          }
+          this._clientEdgeTraversalPath.pop();
           if (!hasExpectedData) {
             return false;
           }
@@ -476,11 +572,7 @@ class RelayReader {
           break;
         case CLIENT_EDGE_TO_CLIENT_OBJECT:
         case CLIENT_EDGE_TO_SERVER_OBJECT:
-          if (RelayFeatureFlags.ENABLE_CLIENT_EDGES) {
-            this._readClientEdge(selection, record, data);
-          } else {
-            throw new Error('Client edges are not yet supported.');
-          }
+          this._readClientEdge(selection, record, data);
           break;
         default:
           (selection: empty);
@@ -494,8 +586,8 @@ class RelayReader {
     return true;
   }
 
-  _readRequiredField(
-    selection: ReaderRequiredField,
+  _readClientSideDirectiveField(
+    selection: RequiredOrCatchField,
     record: Record,
     data: SelectorData,
   ): ?mixed {
@@ -542,8 +634,8 @@ class RelayReader {
     const parentRecordID = RelayModernRecord.getDataID(record);
     const result = this._readResolverFieldImpl(field, parentRecordID);
 
-    const applicationName = field.alias ?? field.name;
-    data[applicationName] = result;
+    const fieldName = field.alias ?? field.name;
+    data[fieldName] = result;
     return result;
   }
 
@@ -736,24 +828,25 @@ class RelayReader {
     const backingField = field.backingField;
 
     // Because ReaderClientExtension doesn't have `alias` or `name` and so I don't know
-    // how to get its applicationName or storageKey yet:
+    // how to get its fieldName or storageKey yet:
     invariant(
       backingField.kind !== 'ClientExtension',
       'Client extension client edges are not yet implemented.',
     );
 
-    const applicationName = backingField.alias ?? backingField.name;
+    const fieldName = backingField.alias ?? backingField.name;
     const backingFieldData = {};
     this._traverseSelections([backingField], record, backingFieldData);
-    // At this point, backingFieldData is an object with a single key (applicationName)
+    // At this point, backingFieldData is an object with a single key (fieldName)
     // whose value is the value returned from the resolver, or a suspense sentinel.
 
-    const clientEdgeResolverResponse = backingFieldData[applicationName];
+    // $FlowFixMe[invalid-computed-prop]
+    const clientEdgeResolverResponse = backingFieldData[fieldName];
     if (
       clientEdgeResolverResponse == null ||
       isSuspenseSentinel(clientEdgeResolverResponse)
     ) {
-      data[applicationName] = clientEdgeResolverResponse;
+      data[fieldName] = clientEdgeResolverResponse;
       return clientEdgeResolverResponse;
     }
 
@@ -805,7 +898,7 @@ class RelayReader {
         data,
       );
       this._clientEdgeTraversalPath.pop();
-      data[applicationName] = edgeValues;
+      data[fieldName] = edgeValues;
       return edgeValues;
     } else {
       const id = extractIdFromResponse(clientEdgeResolverResponse);
@@ -850,18 +943,18 @@ class RelayReader {
         if (model == null) {
           // If the model resolver returns undefined, we should still return null
           // to match GQL behavior.
-          data[applicationName] = null;
+          data[fieldName] = null;
           return null;
         }
       }
       this._clientEdgeTraversalPath.push(traversalPathSegment);
 
-      const prevData = data[applicationName];
+      const prevData = data[fieldName];
       invariant(
         prevData == null || typeof prevData === 'object',
         'RelayReader(): Expected data for field `%s` on record `%s` ' +
           'to be an object, got `%s`.',
-        applicationName,
+        fieldName,
         RelayModernRecord.getDataID(record),
         prevData,
       );
@@ -872,7 +965,7 @@ class RelayReader {
         prevData,
       );
       this._clientEdgeTraversalPath.pop();
-      data[applicationName] = edgeValue;
+      data[fieldName] = edgeValue;
       return edgeValue;
     }
   }
@@ -882,7 +975,7 @@ class RelayReader {
     record: Record,
     data: SelectorData,
   ): ?mixed {
-    const applicationName = field.alias ?? field.name;
+    const fieldName = field.alias ?? field.name;
     const storageKey = getStorageKey(field, this._variables);
     const value = RelayModernRecord.getValue(record, storageKey);
     if (value === null) {
@@ -890,7 +983,7 @@ class RelayReader {
     } else if (value === undefined) {
       this._markDataAsMissing();
     }
-    data[applicationName] = value;
+    data[fieldName] = value;
     return value;
   }
 
@@ -899,11 +992,11 @@ class RelayReader {
     record: Record,
     data: SelectorData,
   ): ?mixed {
-    const applicationName = field.alias ?? field.name;
+    const fieldName = field.alias ?? field.name;
     const storageKey = getStorageKey(field, this._variables);
     const linkedID = RelayModernRecord.getLinkedRecordID(record, storageKey);
     if (linkedID == null) {
-      data[applicationName] = linkedID;
+      data[fieldName] = linkedID;
       if (linkedID === null) {
         this._maybeAddErrorResponseFields(record, storageKey);
       } else if (linkedID === undefined) {
@@ -912,18 +1005,18 @@ class RelayReader {
       return linkedID;
     }
 
-    const prevData = data[applicationName];
+    const prevData = data[fieldName];
     invariant(
       prevData == null || typeof prevData === 'object',
       'RelayReader(): Expected data for field `%s` on record `%s` ' +
         'to be an object, got `%s`.',
-      applicationName,
+      fieldName,
       RelayModernRecord.getDataID(record),
       prevData,
     );
     // $FlowFixMe[incompatible-variance]
     const value = this._traverse(field, linkedID, prevData);
-    data[applicationName] = value;
+    data[fieldName] = value;
     return value;
   }
 
@@ -932,7 +1025,7 @@ class RelayReader {
     record: Record,
     data: SelectorData,
   ): ?mixed {
-    const applicationName = field.alias ?? field.name;
+    const fieldName = field.alias ?? field.name;
     const storageKey = getStorageKey(field, this._variables);
     const externalRef = RelayModernRecord.getActorLinkedRecordID(
       record,
@@ -940,13 +1033,13 @@ class RelayReader {
     );
 
     if (externalRef == null) {
-      data[applicationName] = externalRef;
+      data[fieldName] = externalRef;
       if (externalRef === undefined) {
         this._markDataAsMissing();
       } else if (externalRef === null) {
         this._maybeAddErrorResponseFields(record, storageKey);
       }
-      return data[applicationName];
+      return data[fieldName];
     }
     const [actorIdentifier, dataID] = externalRef;
 
@@ -958,11 +1051,11 @@ class RelayReader {
       }),
       fragmentRef,
     );
-    data[applicationName] = {
+    data[fieldName] = {
       __fragmentRef: fragmentRef,
       __viewer: actorIdentifier,
     };
-    return data[applicationName];
+    return data[fieldName];
   }
 
   _readPluralLink(
@@ -984,22 +1077,22 @@ class RelayReader {
     record: Record,
     data: SelectorData,
   ): ?mixed {
-    const applicationName = field.alias ?? field.name;
+    const fieldName = field.alias ?? field.name;
 
     if (linkedIDs == null) {
-      data[applicationName] = linkedIDs;
+      data[fieldName] = linkedIDs;
       if (linkedIDs === undefined) {
         this._markDataAsMissing();
       }
       return linkedIDs;
     }
 
-    const prevData = data[applicationName];
+    const prevData = data[fieldName];
     invariant(
       prevData == null || Array.isArray(prevData),
       'RelayReader(): Expected data for field `%s` on record `%s` ' +
         'to be an array, got `%s`.',
-      applicationName,
+      fieldName,
       RelayModernRecord.getDataID(record),
       prevData,
     );
@@ -1018,7 +1111,7 @@ class RelayReader {
         prevItem == null || typeof prevItem === 'object',
         'RelayReader(): Expected data for field `%s` on record `%s` ' +
           'to be an object, got `%s`.',
-        applicationName,
+        fieldName,
         RelayModernRecord.getDataID(record),
         prevItem,
       );
@@ -1026,7 +1119,7 @@ class RelayReader {
       // $FlowFixMe[incompatible-variance]
       linkedArray[nextIndex] = this._traverse(field, linkedID, prevItem);
     });
-    data[applicationName] = linkedArray;
+    data[fieldName] = linkedArray;
     return linkedArray;
   }
 
@@ -1115,6 +1208,20 @@ class RelayReader {
     record: Record,
     data: SelectorData,
   ): ?(SelectorData | false) {
+    if (inlineFragment.type == null) {
+      // Inline fragment without a type condition: always read data
+      // Usually this would get compiled away, but fragments with @alias
+      // and no type condition will get preserved.
+      const hasExpectedData = this._traverseSelections(
+        inlineFragment.selections,
+        record,
+        data,
+      );
+      if (hasExpectedData === false) {
+        return false;
+      }
+      return data;
+    }
     const {abstractKey} = inlineFragment;
     if (abstractKey == null) {
       // concrete type refinement: only read data if the type exactly matches
@@ -1196,15 +1303,13 @@ class RelayReader {
     );
     data[FRAGMENT_OWNER_KEY] = this._owner;
 
-    if (RelayFeatureFlags.ENABLE_CLIENT_EDGES) {
-      if (
-        this._clientEdgeTraversalPath.length > 0 &&
-        this._clientEdgeTraversalPath[
-          this._clientEdgeTraversalPath.length - 1
-        ] !== null
-      ) {
-        data[CLIENT_EDGE_TRAVERSAL_PATH] = [...this._clientEdgeTraversalPath];
-      }
+    if (
+      this._clientEdgeTraversalPath.length > 0 &&
+      this._clientEdgeTraversalPath[
+        this._clientEdgeTraversalPath.length - 1
+      ] !== null
+    ) {
+      data[CLIENT_EDGE_TRAVERSAL_PATH] = [...this._clientEdgeTraversalPath];
     }
   }
 

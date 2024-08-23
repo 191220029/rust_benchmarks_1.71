@@ -118,6 +118,7 @@ function handlePotentialSnapshotErrorsForState(
       state.snapshot.missingRequiredFields,
       state.snapshot.relayResolverErrors,
       state.snapshot.errorResponseFields,
+      state.snapshot.selector.node.metadata?.throwOnFieldError ?? false,
     );
   } else if (state.kind === 'plural') {
     for (const snapshot of state.snapshots) {
@@ -126,6 +127,7 @@ function handlePotentialSnapshotErrorsForState(
         snapshot.missingRequiredFields,
         snapshot.relayResolverErrors,
         snapshot.errorResponseFields,
+        snapshot.selector.node.metadata?.throwOnFieldError ?? false,
       );
     }
   }
@@ -360,7 +362,7 @@ function getFragmentState(
 }
 
 // fragmentNode cannot change during the lifetime of the component, though fragmentRef may change.
-function useFragmentInternal(
+hook useFragmentInternal(
   fragmentNode: ReaderFragment,
   fragmentRef: mixed,
   hookDisplayName: string,
@@ -466,6 +468,7 @@ function useFragmentInternal(
     // a static (constant) property of the fragment. In practice, this effect will
     // always or never run for a given invocation of this hook.
     // eslint-disable-next-line react-hooks/rules-of-hooks
+    // $FlowFixMe[react-rule-hook]
     const [clientEdgeQueries, activeRequestPromises] = useMemo(() => {
       const missingClientEdges = getMissingClientEdges(state);
       // eslint-disable-next-line no-shadow
@@ -496,6 +499,7 @@ function useFragmentInternal(
 
     // See above note
     // eslint-disable-next-line react-hooks/rules-of-hooks
+    // $FlowFixMe[react-rule-hook]
     useEffect(() => {
       const QueryResource = getQueryResourceForEnvironment(environment);
       if (clientEdgeQueries?.length) {
@@ -531,6 +535,7 @@ function useFragmentInternal(
       RelayFeatureFlags.ENABLE_RELAY_OPERATION_TRACKER_SUSPENSE ||
       environment !== previousEnvironment ||
       !committedFragmentSelectorRef.current ||
+      // $FlowFixMe[react-rule-unsafe-ref]
       !areEqualSelectors(committedFragmentSelectorRef.current, fragmentSelector)
     ) {
       invariant(fragmentSelector != null, 'refinement, see invariants above');
@@ -590,6 +595,7 @@ function useFragmentInternal(
         state = updatedState;
       }
     }
+    // $FlowFixMe[react-rule-unsafe-ref]
     hasPendingStateChanges.current = false;
   }
 
@@ -602,6 +608,7 @@ function useFragmentInternal(
     // for a particular useFragment invocation site
     const fragmentRefIsNullish = fragmentRef == null; // for less sensitive memoization
     // eslint-disable-next-line react-hooks/rules-of-hooks
+    // $FlowFixMe[react-rule-hook]
     data = useMemo(() => {
       if (state.kind === 'bailout') {
         // Bailout state can happen if the fragmentRef is a plural array that is empty or has no
@@ -652,6 +659,7 @@ function useFragmentInternal(
 
   if (__DEV__) {
     // eslint-disable-next-line react-hooks/rules-of-hooks
+    // $FlowFixMe[react-rule-hook]
     useDebugValue({fragment: fragmentNode.name, data});
   }
 

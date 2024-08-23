@@ -58,9 +58,11 @@ use crate::DocblockIr;
 use crate::LegacyVerboseResolverIr;
 use crate::On;
 use crate::ParseOptions;
+use crate::ResolverFieldDocblockIr;
+use crate::ResolverTypeDocblockIr;
 
 pub(crate) fn parse_docblock_ir(
-    project_name: ProjectName,
+    project_name: &ProjectName,
     untyped_representation: UntypedDocblockRepresentation,
     definitions_in_file: Option<&Vec<ExecutableDefinition>>,
     parse_options: &ParseOptions<'_>,
@@ -107,68 +109,50 @@ pub(crate) fn parse_docblock_ir(
                 source_hash,
             )?;
 
-            let field_name = format!(
-                "{}.{}",
-                legacy_verbose_resolver.on.type_name(),
-                legacy_verbose_resolver.field.name.value
-            )
-            .intern();
-
-            if !parse_options
-                .allow_legacy_verbose_syntax
-                .is_enabled_for(field_name)
-            {
-                match legacy_verbose_resolver.on {
-                    On::Type(field) => {
-                        return Err(vec![Diagnostic::error(
-                            IrParsingErrorMessages::UnexpectedOnType { field_name },
-                            field.key_location,
-                        )]);
-                    }
-                    On::Interface(field) => {
-                        return Err(vec![Diagnostic::error(
-                            IrParsingErrorMessages::UnexpectedOnInterface { field_name },
-                            field.key_location,
-                        )]);
-                    }
-                }
-            }
-            DocblockIr::LegacyVerboseResolver(legacy_verbose_resolver)
+            DocblockIr::Field(ResolverFieldDocblockIr::LegacyVerboseResolver(
+                legacy_verbose_resolver,
+            ))
         }
         IrField::PopulatedIrField(populated_ir_field) => {
             if populated_ir_field.value.item.lookup().contains('.') {
-                DocblockIr::TerseRelayResolver(parse_terse_relay_resolver_ir(
-                    &mut fields,
-                    description,
-                    populated_ir_field,
-                    definitions_in_file,
-                    docblock_location,
-                    source_hash,
-                    parse_options,
-                )?)
+                DocblockIr::Field(ResolverFieldDocblockIr::TerseRelayResolver(
+                    parse_terse_relay_resolver_ir(
+                        &mut fields,
+                        description,
+                        populated_ir_field,
+                        definitions_in_file,
+                        docblock_location,
+                        source_hash,
+                        parse_options,
+                    )?,
+                ))
             } else {
                 match get_optional_unpopulated_field_named(
                     &mut fields,
                     AllowedFieldName::WeakField,
                 )? {
-                    Some(weak_field) => DocblockIr::WeakObjectType(parse_weak_object_ir(
-                        &mut fields,
-                        description,
-                        None, // This might be necessary for field hack source links
-                        docblock_location,
-                        populated_ir_field,
-                        weak_field,
-                        source_hash,
-                        parse_options,
-                    )?),
-                    None => DocblockIr::StrongObjectResolver(parse_strong_object_ir(
-                        project_name,
-                        &mut fields,
-                        description,
-                        docblock_location,
-                        populated_ir_field,
-                        source_hash,
-                    )?),
+                    Some(weak_field) => DocblockIr::Type(ResolverTypeDocblockIr::WeakObjectType(
+                        parse_weak_object_ir(
+                            &mut fields,
+                            description,
+                            None, // This might be necessary for field hack source links
+                            docblock_location,
+                            populated_ir_field,
+                            weak_field,
+                            source_hash,
+                            parse_options,
+                        )?,
+                    )),
+                    None => DocblockIr::Type(ResolverTypeDocblockIr::StrongObjectResolver(
+                        parse_strong_object_ir(
+                            project_name,
+                            &mut fields,
+                            description,
+                            docblock_location,
+                            populated_ir_field,
+                            source_hash,
+                        )?,
+                    )),
                 }
             }
         }
@@ -249,15 +233,12 @@ fn parse_relay_resolver_ir(
         output_type,
         fragment_arguments,
         source_hash,
-        semantic_non_null: get_optional_unpopulated_field_named(
-            fields,
-            AllowedFieldName::SemanticNonNullField,
-        )?,
+        semantic_non_null: None,
     })
 }
 
 fn parse_strong_object_ir(
-    project_name: ProjectName,
+    project_name: &ProjectName,
     fields: &mut HashMap<AllowedFieldName, IrField>,
     description: Option<WithLocation<StringKey>>,
     location: Location,
@@ -286,10 +267,7 @@ fn parse_strong_object_ir(
         location,
         implements_interfaces,
         source_hash,
-        semantic_non_null: get_optional_unpopulated_field_named(
-            fields,
-            AllowedFieldName::SemanticNonNullField,
-        )?,
+        semantic_non_null: None,
     })
 }
 
@@ -410,6 +388,8 @@ fn parse_terse_relay_resolver_ir(
         }
     }
 
+    let semantic_non_null = field.directives.named("semanticNonNull".intern()).cloned();
+
     Ok(TerseRelayResolverIr {
         field,
         type_: WithLocation::new(type_str.location.with_span(type_name.span), type_name.value),
@@ -418,10 +398,7 @@ fn parse_terse_relay_resolver_ir(
         location,
         deprecated: fields.remove(&AllowedFieldName::DeprecatedField),
         live: get_optional_unpopulated_field_named(fields, AllowedFieldName::LiveField)?,
-        semantic_non_null: get_optional_unpopulated_field_named(
-            fields,
-            AllowedFieldName::SemanticNonNullField,
-        )?,
+        semantic_non_null,
         fragment_arguments,
         source_hash,
     })
@@ -635,7 +612,13 @@ fn parse_fragment_definition(
     definitions_in_file: Option<&Vec<ExecutableDefinition>>,
 ) -> DiagnosticsResult<(Option<WithLocation<StringKey>>, Option<Vec<Argument>>)> {
     let fragment_definition = root_fragment
-        .map(|root_fragment| assert_fragment_definition(root_fragment.value, definitions_in_file))
+        .map(|root_fragment| {
+            assert_fragment_definition(
+                root_fragment.value,
+                root_fragment.value.item,
+                definitions_in_file,
+            )
+        })
         .transpose()?;
 
     let fragment_arguments = fragment_definition
@@ -674,14 +657,15 @@ fn parse_fragment_definition(
     Ok((fragment_type_condition, fragment_arguments))
 }
 
-fn assert_fragment_definition(
+pub fn assert_fragment_definition(
     root_fragment: WithLocation<StringKey>,
+    fragment_name: StringKey,
     definitions_in_file: Option<&Vec<ExecutableDefinition>>,
 ) -> Result<FragmentDefinition, Diagnostic> {
     let fragment_definition = definitions_in_file.and_then(|defs| {
         defs.iter().find(|item| {
             if let ExecutableDefinition::Fragment(fragment) = item {
-                fragment.name.value == root_fragment.item
+                fragment.name.value == fragment_name
             } else {
                 false
             }
@@ -696,7 +680,7 @@ fn assert_fragment_definition(
 
         Err(Diagnostic::error(
             ErrorMessagesWithData::FragmentNotFound {
-                fragment_name: root_fragment.item,
+                fragment_name,
                 suggestions,
             },
             root_fragment.location,

@@ -17,11 +17,13 @@ use async_trait::async_trait;
 use common::DiagnosticsResult;
 use common::FeatureFlags;
 use common::Rollout;
+use docblock_syntax::DocblockAST;
 use dunce::canonicalize;
 use fnv::FnvBuildHasher;
 use fnv::FnvHashSet;
 use graphql_ir::OperationDefinition;
 use graphql_ir::Program;
+use graphql_syntax::ExecutableDefinition;
 use indexmap::IndexMap;
 use intern::string_key::StringKey;
 use js_config_loader::LoaderSource;
@@ -45,6 +47,7 @@ use relay_config::TypegenConfig;
 pub use relay_config::TypegenLanguage;
 use relay_docblock::DocblockIr;
 use relay_transforms::CustomTransformsConfig;
+use rustc_hash::FxHashMap;
 use serde::de::Error as DeError;
 use serde::Deserialize;
 use serde::Deserializer;
@@ -65,6 +68,7 @@ use crate::errors::ConfigValidationError;
 use crate::errors::Error;
 use crate::errors::Result;
 use crate::saved_state::SavedStateLoader;
+use crate::source_control_for_root;
 use crate::status_reporter::ConsoleStatusReporter;
 use crate::status_reporter::StatusReporter;
 
@@ -96,6 +100,10 @@ pub struct Config {
     pub root_dir: PathBuf,
     pub sources: FnvIndexMap<PathBuf, ProjectSet>,
     pub excludes: Vec<String>,
+    /// Some projects may need to include extra source directories without being
+    /// affected by exclusion globs from the `excludes` config (e.g. generated
+    /// directories).
+    pub generated_sources: FnvIndexMap<PathBuf, ProjectSet>,
     pub projects: FnvIndexMap<ProjectName, ProjectConfig>,
     pub header: Vec<String>,
     pub codegen_command: Option<String>,
@@ -170,6 +178,7 @@ pub struct Config {
             dyn Fn(
                     ProjectName,
                     &CompilerState,
+                    &FxHashMap<&PathBuf, (Vec<DocblockAST>, Option<&Vec<ExecutableDefinition>>)>,
                 ) -> DiagnosticsResult<(Vec<DocblockIr>, Vec<DocblockIr>)>
                 // (Types, Fields)
                 + Send
@@ -414,7 +423,10 @@ impl Config {
 
         let config = Self {
             name: config_file.name,
-            artifact_writer: Box::new(ArtifactFileWriter::new(None, root_dir.clone())),
+            artifact_writer: Box::new(ArtifactFileWriter::new(
+                source_control_for_root(&root_dir),
+                root_dir.clone(),
+            )),
             status_reporter: Box::new(ConsoleStatusReporter::new(
                 root_dir.clone(),
                 is_multi_project,
@@ -422,6 +434,7 @@ impl Config {
             root_dir,
             sources: config_file.sources,
             excludes: config_file.excludes,
+            generated_sources: config_file.generated_sources,
             projects,
             header: config_file.header,
             codegen_command: config_file.codegen_command,
@@ -580,6 +593,7 @@ impl fmt::Debug for Config {
             root_dir,
             sources,
             excludes,
+            generated_sources,
             compile_everything,
             repersist_operations,
             projects,
@@ -604,6 +618,7 @@ impl fmt::Debug for Config {
             .field("root_dir", root_dir)
             .field("sources", sources)
             .field("excludes", excludes)
+            .field("generated_sources", generated_sources)
             .field("compile_everything", compile_everything)
             .field("repersist_operations", repersist_operations)
             .field("projects", projects)
@@ -663,12 +678,16 @@ struct MultiProjectConfigFile {
     /// A mapping from directory paths (relative to the root) to a source set.
     /// If a path is a subdirectory of another path, the more specific path
     /// wins.
-    sources: IndexMap<PathBuf, ProjectSet, fnv::FnvBuildHasher>,
+    sources: FnvIndexMap<PathBuf, ProjectSet>,
 
     /// Glob patterns that should not be part of the sources even if they are
     /// in the source set directories.
     #[serde(default = "get_default_excludes")]
     excludes: Vec<String>,
+
+    /// Similar to sources but not affected by excludes.
+    #[serde(default)]
+    generated_sources: FnvIndexMap<PathBuf, ProjectSet>,
 
     /// Configuration of projects to compile.
     projects: FnvIndexMap<ProjectName, ConfigFileProject>,

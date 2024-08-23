@@ -22,10 +22,4 @@ use thiserror::Error;
 pub enum ExtractError {
     #[error("Unsupported type")]
     UnsupportedType,
-    #[error("Expected the function name to exist")]
-    MissingFunctionName,
-    #[error("Expected the function return type to exist")]
-    MissingReturnType,
-    #[error("Expected to have at least one function parameter")]
-    MissingFunctionParam,
 }

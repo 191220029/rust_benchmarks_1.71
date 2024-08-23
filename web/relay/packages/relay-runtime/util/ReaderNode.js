@@ -33,7 +33,7 @@ export type ReaderInlineDataFragmentSpread = {
   +kind: 'InlineDataFragmentSpread',
   +name: string,
   +selections: $ReadOnlyArray<ReaderSelection>,
-  +args: ?$ReadOnlyArray<ReaderArgument>,
+  +args?: ?$ReadOnlyArray<ReaderArgument>,
   +argumentDefinitions: $ReadOnlyArray<ReaderArgumentDefinition>,
 };
 
@@ -44,6 +44,7 @@ export type ReaderFragment = {
   +abstractKey?: ?string,
   +metadata?: ?{
     +connection?: $ReadOnlyArray<ConnectionMetadata>,
+    +throwOnFieldError?: boolean,
     +hasClientEdges?: boolean,
     +mask?: boolean,
     +plural?: boolean,
@@ -140,7 +141,7 @@ export type ReaderRootArgument = {
 export type ReaderInlineFragment = {
   +kind: 'InlineFragment',
   +selections: $ReadOnlyArray<ReaderSelection>,
-  +type: string,
+  +type: ?string,
   +abstractKey?: ?string,
 };
 
@@ -236,6 +237,15 @@ export type ReaderRequiredField = {
   +path: string,
 };
 
+export type CatchFieldTo = 'RESULT' | 'NULL';
+
+export type ReaderCatchField = {
+  +kind: 'CatchField',
+  +field: ReaderField | ReaderClientEdge,
+  +to: CatchFieldTo,
+  +path: string,
+};
+
 export type ResolverFunction = (...args: Array<any>) => mixed; // flowlint-line unclear-type:off
 // With ES6 imports, a resolver function might be exported under the `default` key.
 export type ResolverModule = ResolverFunction | {default: ResolverFunction};
@@ -259,10 +269,10 @@ export type ResolverWeakModelNormalizationInfo = {
 
 export type ReaderRelayResolver = {
   +kind: 'RelayResolver',
-  +alias: ?string,
+  +alias?: ?string,
   +name: string,
-  +args: ?$ReadOnlyArray<ReaderArgument>,
-  +fragment: ?ReaderFragmentSpread,
+  +args?: ?$ReadOnlyArray<ReaderArgument>,
+  +fragment?: ?ReaderFragmentSpread,
   +path: string,
   +resolverModule: ResolverModule,
   +normalizationInfo?: ResolverNormalizationInfo,
@@ -270,10 +280,10 @@ export type ReaderRelayResolver = {
 
 export type ReaderRelayLiveResolver = {
   +kind: 'RelayLiveResolver',
-  +alias: ?string,
+  +alias?: ?string,
   +name: string,
-  +args: ?$ReadOnlyArray<ReaderArgument>,
-  +fragment: ?ReaderFragmentSpread,
+  +args?: ?$ReadOnlyArray<ReaderArgument>,
+  +fragment?: ?ReaderFragmentSpread,
   +path: string,
   +resolverModule: ResolverModule,
   +normalizationInfo?: ResolverNormalizationInfo,
@@ -320,6 +330,7 @@ export type ReaderSelection =
   | ReaderInlineFragment
   | ReaderModuleImport
   | ReaderStream
+  | ReaderCatchField
   | ReaderRequiredField
   | ReaderRelayResolver;
 
