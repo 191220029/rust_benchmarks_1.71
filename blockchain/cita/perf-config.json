@@ -1,0 +1,6 @@
+{
+    "compile_time_type": "Packages",
+    "packages": [
+        "chain-executor-mock"
+    ]
+}
